@@ -95,8 +95,8 @@ def initialize_db():
   db.drop_all()
   db.create_all()
   create_users()
-  # create_reviews()
-  # parse_students()
+  create_reviews()
+  parse_students()
   print('database intialized')
 
 
@@ -121,11 +121,37 @@ def login_action():
 
 
 @app.route('/app')
-@app.route('/app/<student_id>')
+@app.route('/app/<student_id>', methods=['GET'])
 @jwt_required()
 def home(student_id=820321819):
-  return render_template('index.html', students=None, user=current_user, selected_student=None)
+  students = Student.query.all()
+  selected_student = Student.query.get(student_id)
+  reviews = Review.query.filter_by(student_id=student_id).all()
+  user = User.query.get(current_user.id)
+  selected_user = User.query.get(current_user.id)
+  return render_template('index.html', students=students, selected_student=selected_student, reviews=reviews, user=user, selected_user=selected_user)
 
+@app.route('/create_review/<student_id>', methods=['POST'])
+@jwt_required()
+def create_review(student_id):
+  text = request.form.get('text')
+  rating = request.form.get('rating')
+  user = User.query.get(current_user.id)
+  review = Review( student_id=student_id, user_id=user.id , text=text, rating=rating)
+  db.session.add(review)
+  db.session.commit()
+  return redirect(url_for('home', student_id=student_id ))
+
+@app.route('/delete_review/<review_id>')
+@jwt_required()
+def delete(review_id):
+  review = Review.query.get(review_id)
+  student_id = review.student_id
+  user = User.query.get(current_user.id)
+  db.session.delete(review)
+  db.session.commit()
+  return redirect(url_for('home', student_id=student_id))
+  
 @app.route('/logout')
 def logout():
   response = redirect(url_for('login'))

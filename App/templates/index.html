@@ -58,20 +58,38 @@
     <ul id="slide-out" class="sidenav sidenav-fixed">
       <nav class="nav-extended purple" style="margin-bottom:10px">
         <div class="nav-wrapper">
-          <a href="#" style="font-size:1.5em" class="brand-logo left">Logged in As:  </a>
+          <a href="#" style="font-size:1.5em" class="brand-logo left">Logged in As: {{user.username}}  </a>
         </div>
       </nav>
       
       <div class="input-field col s12" >
         <select class="icons" name="student_id" onchange="window.location.href = `/app/${this.value}`">
           <option value=""  disabled >Choose your option</option>
-          <option value="820321819" selected data-icon="https://randomuser.me/api/portraits/men/2.jpg">Tyler Dunn</option>
+          {% for student in students %}
+          <option value={{student.id}}  data-icon= {{student.image}} {% if (selected_student.id == student.id) %} selected {% endif %} >{{ student.first_name }} {{ student.last_name }} </option>
+          {% endfor %}
+
         </select>
         <label>Select Student</label>
       </div>
-
+      
       <div class="col s12">
-          <!-- Student Details -->
+        <div class="row">
+            <div class="card medium">
+                <div class="card-image">
+                  <img src={{selected_student.image}}>
+                  <span class="card-title">{{selected_student.first_name}} {{selected_student.last_name}}</span>
+                </div>
+                <div class="card-content">
+                  <p>StudentID:{{selected_student.id}}</p>
+                  <p>Degree:{{selected_student.programme}} </p>
+                  <p>YearStarted:{{selected_student.start_year}} </p>
+                  <p>Rating: {{selected_student.average_rating() }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </ul>
@@ -81,7 +99,7 @@
       <nav class="nav-extended purple" style="margin-bottom:10px">
         <div class="nav-wrapper">
           <span style="margin-left: 10px;">
-            Create Review for 
+            Create Review for {{selected_student.first_name}} {{selected_student.last_name}}
           </span>
           
           <ul id="nav-mobile" class="right">
@@ -90,9 +108,9 @@
         </div>
         <div class="nav-content purple">
  
-          <form>
+          <form method="POST" action="{{url_for('create_review', student_id=selected_student.id)}}" class="review-form">
             <input type="hidden" value="" name="student_id">
-                  
+
             <div class="row" style="width: 95%">
               <div class="input-field col s10 offset-s1">
                 <textarea name="text" class="materialize-textarea"></textarea>
@@ -102,19 +120,19 @@
               <div class="input-field col s1 offset-s1">
                 Rating:
               </div>
-   
+
               <div class="input-field col s4">
                 <p class="range-field">
                   <input type="range" name="rating" min="0" max="5" />
                 </p>
               </div>
-              
+
               <div class="input-field col s3 offset-s3">
                 <input type="submit" class="btn" value="create">
               </div>
-              
+
             </div>
-            
+
           </form>
           
         </div>
@@ -122,7 +140,22 @@
 
       <div class="row" style="width: 95%; height: 67vh; overflow-y:scroll; margin-left: auto;  margin-right: auto;">
         <div class="col s12">
-            Show reviews here
+          <div class="row">
+            {% for review in reviews %}
+              <div class="card blue-grey darken-1">
+                <div class="card-content white-text">
+                  <span class="card-title">Autor : {{review.user.username}} </span>
+                  <p>{{review.text}}</p>
+                  <p>Rating: {{review.rating}}</p>
+                </div>
+                {% if review.user.id == user.id %}
+                <div class="card-buttons">
+                  <a class="waves-effect waves-light btn" href="{{url_for('delete', review_id=review.id) }} " >Delete</a>
+                </div>  
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
         </div>
       </div>
 
