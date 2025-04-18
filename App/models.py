@@ -20,7 +20,7 @@ class User(db.Model):
 
 
 
-  def create_reviw(self, student_id, text, rating):
+  def create_review(self, student_id, text, rating):
     review = Review(student_id=student_id, user_id=self.id, text=text, rating=rating)
     db.session.add(review)
     db.session.commit()
